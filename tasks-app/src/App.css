@@ -1,0 +1,25 @@
+.white {
+    color: white;
+}
+
+.grey {
+    color: rgb(77, 77, 77)
+}
+
+.default-site-header {
+    display: grid;
+
+    grid-template-columns: 1fr;
+    
+    justify-self: center;
+}
+
+.default-button {
+    border: none;
+    border-radius: 10px;
+
+    background-color: rgb(76, 175, 79);
+
+    padding: 10px;
+    margin: 5px;
+}
