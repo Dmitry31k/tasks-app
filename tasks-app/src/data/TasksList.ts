@@ -20,3 +20,8 @@ export let learningTasksList: TaskType[] = [
     {taskId: "t8", title: "Learn TypeScript advanced types"},
     {taskId: "t9", title: "Practice system design"},
 ]
+
+export let totalActiveTasks: number = workTasksList.length + 
+designTasksList.length + 
+dailyTasksList.length + 
+learningTasksList.length;

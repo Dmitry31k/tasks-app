@@ -31,8 +31,6 @@ function App() {
         }
     }
 
-    console.log(activeWorkspace)
-
     return (
         <>
             <header className="default-site-header">
@@ -43,6 +41,9 @@ function App() {
             </button>
             <button onClick={handleSwitchPrevWorkspace} className="default-button">
                 <p className="white">Switch to previous workspace</p>
+            </button>
+            <button className="default-button">
+                <p className="white">Add new workspace</p>
             </button>
             {workspacesList.length === 0 && <span>You don't have any active task boards</span>}
             <Workspace workspace={workspacesList[activeWorkspace]}></Workspace>
