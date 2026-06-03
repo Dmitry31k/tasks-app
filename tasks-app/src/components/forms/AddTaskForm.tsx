@@ -1,5 +1,8 @@
 import type { TaskType } from "../../types/DefaultType"
-import { useState } from "react";
+import { useState } from "react"
+import { generateId } from "../utilities/IdGenerator"
+
+import "./DefaultFormStyle.css"
 
 interface Props {
     onTaskAdded: (task: TaskType) => void;
@@ -7,16 +10,12 @@ interface Props {
 
 function AddTaskForm({onTaskAdded}: Props) {
     const [userTask, updateUserTask] = useState("");
-    const [userTaskId, updateUserTaskId] = useState("");
     const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
 
     const handleTaskAdded = () => {
-        let finalId: string = userTaskId === "" ? "not provided" : userTaskId;
-
-        onTaskAdded({taskId: finalId, title: userTask});
+        onTaskAdded({taskId: generateId("Task"), title: userTask});
 
         updateUserTask("");
-        updateUserTaskId("");
         updateDisableSaveButton(true);
     }
 
@@ -37,13 +36,12 @@ function AddTaskForm({onTaskAdded}: Props) {
                 placeholder="New task (can't be empty)" 
                 onChange={handleUpdatingUserTaskInput} 
                 value={userTask}
+                className="default-input"
             />
-            <input type="text" 
-                placeholder="Task Id" 
-                onChange={(input) => updateUserTaskId(input.target.value)} 
-                value={userTaskId}
-            />
-            <button onClick={handleTaskAdded} disabled={bDisableSaveButton}>Save task</button>
+            <button onClick={handleTaskAdded} 
+                disabled={bDisableSaveButton}
+                className="save-button"
+            ><p className="white">Save task</p></button>
         </>
     );
 }

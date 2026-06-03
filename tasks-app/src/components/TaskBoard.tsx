@@ -1,33 +1,38 @@
 import { useState } from "react";
+
 import type {BoardType} from "../types/DefaultType"
+import type { TaskType } from "../types/DefaultType"
+
 import AddTaskForm from "./forms/AddTaskForm"
-import type { TaskType } from "../types/DefaultType";
 
 import "./styles/TaskBoard.css"
+import "./forms/DefaultFormStyle.css"
 
 interface Props {
     board: BoardType;
+    onTaskAdded: (task: TaskType, boardId: string) => void;
 }
 
-function TaskBoard({board}: Props) {
+function TaskBoard({board, onTaskAdded}: Props) {
     const {taskBoardId, name, tasks} = board;
 
     const [bShowTaskForm, setShowTaskForm] = useState(false);
-    const [actualTasks, updateActualTasks] = useState(tasks);
 
     const handleTaskAdded = (task: TaskType) => {
-        updateActualTasks(oldTasks => [...oldTasks, task]);
-    }
+        onTaskAdded(task, taskBoardId);
+    } 
 
     return (
         <>
             <h3>Board: {name}</h3>
-            {actualTasks.length === 0 && <span>No tasks found</span>}
+            {tasks.length === 0 && <span>No tasks found</span>}
             <ul>
-                {actualTasks.map(task => <li key={task.taskId}>{task.title}</li>)}
+                {tasks.map(task => <li key={task.taskId}>{task.title}</li>)}
             </ul>
             <span>task board id: {taskBoardId}</span>
-            <button onClick={() => setShowTaskForm(!bShowTaskForm)}>Add task</button>
+            <button onClick={() => setShowTaskForm(!bShowTaskForm)}
+                className="add-button"
+            >Add task</button>
             {bShowTaskForm && <AddTaskForm onTaskAdded={handleTaskAdded}></AddTaskForm>}
         </>
     );
