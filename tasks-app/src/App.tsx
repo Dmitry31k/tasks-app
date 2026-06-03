@@ -98,7 +98,6 @@ function App() {
                 workspace={totalWorkspaces[activeWorkspace]}
                 onBoardAdded={handleBoardAdded}
                 onTaskAdded={handleTaskAdded}
-                globalWorkspacesList={totalWorkspaces}
             ></Workspace>
         </>
     )

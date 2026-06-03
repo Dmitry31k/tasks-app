@@ -13,10 +13,9 @@ interface Props {
     workspace: WorkspaceType;
     onBoardAdded: (board: BoardType, workspaceId: string) => void;
     onTaskAdded: (task: TaskType, BoardId: string) => void;
-    globalWorkspacesList: WorkspaceType[];
 }
 
-function Workspace({workspace, onBoardAdded, onTaskAdded, globalWorkspacesList}: Props) {
+function Workspace({workspace, onBoardAdded, onTaskAdded}: Props) {
     const {workspaceId, name, boards} = workspace;
 
     const [bShowBoardForm, updateShowBoardForm] = useState(false);
