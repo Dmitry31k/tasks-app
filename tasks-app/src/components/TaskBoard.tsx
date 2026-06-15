@@ -1,25 +1,18 @@
-import { useState } from "react";
-
 import type {BoardType} from "../types/DefaultType"
-import type { TaskType } from "../types/DefaultType"
-
-import AddTaskForm from "./forms/AddTaskForm"
 
 import "./styles/TaskBoard.css"
 import "./forms/DefaultFormStyle.css"
 
 interface Props {
     board: BoardType;
-    onTaskAdded: (task: TaskType, boardId: string) => void;
+    onTaskModalOpened: (boardId: string) => void;
 }
 
-function TaskBoard({board, onTaskAdded}: Props) {
+function TaskBoard({board, onTaskModalOpened}: Props) {
     const {taskBoardId, name, tasks} = board;
 
-    const [bShowTaskForm, setShowTaskForm] = useState(false);
-
-    const handleTaskAdded = (task: TaskType) => {
-        onTaskAdded(task, taskBoardId);
+    const handleOnAddTaskModalOpened = () => {
+        onTaskModalOpened(taskBoardId);
     } 
 
     return (
@@ -30,10 +23,9 @@ function TaskBoard({board, onTaskAdded}: Props) {
                 {tasks.map(task => <li key={task.taskId}>{task.title}</li>)}
             </ul>
             <span>task board id: {taskBoardId}</span>
-            <button onClick={() => setShowTaskForm(!bShowTaskForm)}
+            <button onClick={handleOnAddTaskModalOpened}
                 className="add-button"
             >Add task</button>
-            {bShowTaskForm && <AddTaskForm onTaskAdded={handleTaskAdded}></AddTaskForm>}
         </>
     );
 }

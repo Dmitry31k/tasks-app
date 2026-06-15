@@ -1,27 +1,25 @@
-import { useState } from "react";
-
-import type {BoardType, WorkspaceType} from "../types/DefaultType"
-import type { TaskType } from "../types/DefaultType";
+import type {WorkspaceType} from "../types/DefaultType"
+import type { ModalType } from "../types/DefaultType";
 
 import TaskBoard from "./TaskBoard";
-import AddBoardForm from "./forms/AddBoardForm";
 
 import "./styles/Workspace.css"
 import "./forms/DefaultFormStyle.css"
 
 interface Props {
     workspace: WorkspaceType;
-    onBoardAdded: (board: BoardType, workspaceId: string) => void;
-    onTaskAdded: (task: TaskType, BoardId: string) => void;
+    onModalOpened: (modal: ModalType, workspaceId: string, boardId?: string) => void;
 }
 
-function Workspace({workspace, onBoardAdded, onTaskAdded}: Props) {
+function Workspace({workspace, onModalOpened}: Props) {
     const {workspaceId, name, boards} = workspace;
 
-    const [bShowBoardForm, updateShowBoardForm] = useState(false);
+    const handleOnAddBoardModalOpened = () => {
+        onModalOpened("createBoard", workspaceId);
+    }
 
-    const handleBoardAdded = (board: BoardType) => {
-        onBoardAdded(board, workspaceId);
+    const handleOnAddTaskModalOpened = (boardId: string) => {
+        onModalOpened("createTask", workspaceId, boardId);
     }
 
     return (
@@ -31,18 +29,14 @@ function Workspace({workspace, onBoardAdded, onTaskAdded}: Props) {
             <ul>
                 {boards.map(board =>
                 <li key={board.taskBoardId} className="boards-list">
-                    <TaskBoard board={board} onTaskAdded={onTaskAdded} >
+                    <TaskBoard board={board} onTaskModalOpened={handleOnAddTaskModalOpened} >
                     </TaskBoard>
                 </li>)}
             </ul>
             <span>workspace id: {workspaceId}</span>
-            <button onClick={() => updateShowBoardForm(!bShowBoardForm)}
+            <button onClick={handleOnAddBoardModalOpened}
                 className="add-button"
             >Add board</button>
-            {bShowBoardForm && 
-                <AddBoardForm onBoardAdded={handleBoardAdded}>
-                </AddBoardForm>
-            }
         </div>
     );
 }

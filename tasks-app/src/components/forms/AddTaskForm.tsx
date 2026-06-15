@@ -6,9 +6,10 @@ import "./DefaultFormStyle.css"
 
 interface Props {
     onTaskAdded: (task: TaskType) => void;
+    onModalClosed: () => void;
 }
 
-function AddTaskForm({onTaskAdded}: Props) {
+function AddTaskForm({onTaskAdded, onModalClosed}: Props) {
     const [userTask, updateUserTask] = useState("");
     const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
 
@@ -31,7 +32,7 @@ function AddTaskForm({onTaskAdded}: Props) {
     }
 
     return (
-        <>
+        <p className="modal-default">
             <input type="text" 
                 placeholder="New task (can't be empty)" 
                 onChange={handleUpdatingUserTaskInput} 
@@ -42,7 +43,10 @@ function AddTaskForm({onTaskAdded}: Props) {
                 disabled={bDisableSaveButton}
                 className="save-button"
             ><p className="white">Save task</p></button>
-        </>
+            <button onClick={onModalClosed} 
+                className="save-button"
+            ><p className="white">Close</p></button>
+        </p>
     );
 }
 

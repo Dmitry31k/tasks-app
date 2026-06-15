@@ -23,3 +23,7 @@
     padding: 10px;
     margin: 5px;
 }
+
+body.modal-open {
+    overflow: hidden;
+}
