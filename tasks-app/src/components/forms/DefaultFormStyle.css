@@ -17,6 +17,13 @@
     z-index: 1000;
 }
 
+.white-background {
+    margin: 10px;
+    border-radius: 5px;
+    padding: 30px;
+    background-color: aliceblue;
+}
+
 .default-input {
     margin: 10px;
     border-radius: 5px;

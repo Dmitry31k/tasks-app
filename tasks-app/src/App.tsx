@@ -8,36 +8,25 @@ import { useEffect } from "react";
 import type { BoardType, WorkspaceType } from "./types/DefaultType";
 import type { TaskType } from "./types/DefaultType";
 import type { ModalType } from "./types/DefaultType";
+import type { ModalInfo } from "./types/DefaultType";
 import type { AppData } from "./types/DefaultType";
 
 import "./NormalazingStyles.css"
 import "./App.css"
 
-type ModalInfo = {
-    type: ModalType | null;
-    workspaceId: string | null;
-    boardId: string | null;
-}
-
 function App() {
     const [activeWorkspace, setActiveWorkspace] = useState(0);
     const [totalWorkspaces, updateTotalWorkspaces] = useState(workspacesList);
 
-    const [modals, updateTotalModals] = useState<ModalType[]>([]);
-
-    const [modalInfo, setModalInfo] = useState<ModalInfo>({
-        type: null,
-        workspaceId: null,
-        boardId: null,
-    });
+    const [modalInfo, setModalInfo] = useState<ModalInfo[]>([]);
 
     useEffect(() => {
-        if (modals.length > 0) {
+        if (modalInfo.length > 0) {
             document.body.classList.add("modal-open");
         } else {
             document.body.classList.remove("modal-open");
         }
-    }, [modals]);
+    }, [modalInfo]);
 
     const handleSwitchNextWorkspace = () => {
         if (totalWorkspaces.length === 0)
@@ -98,17 +87,20 @@ function App() {
         handleModalOpened("createWorkspace");
     }
 
-    const handleModalOpened = (modal: ModalType, workspaceId?: string, boardId?: string) => {
-        updateTotalModals(oldModalsList => {
-            return [...oldModalsList, modal];
+    const handleModalOpened = (modal: ModalType, workspaceId?: string, message?: string, boardId?: string, taskId?: string) => {
+        setModalInfo(oldModalsList => {
+            return [...oldModalsList, {type: modal, 
+                workspaceId: workspaceId ?? null, 
+                message: message ?? null, 
+                boardId: boardId ?? null, 
+                taskId: taskId ?? null
+            }];
         });
-
-        setModalInfo({type: modal, workspaceId: workspaceId ?? null, boardId: boardId ?? null});
     }
 
-    const handleModalClosed = () => {
-        updateTotalModals(oldModalsList => {
-            return oldModalsList.slice(0, -1);
+    const handleModalClosed = (closedModals: number = 1) => {
+        setModalInfo(oldModalsList => {
+            return oldModalsList.slice(0, -closedModals);
         })
     }
 
@@ -124,16 +116,84 @@ function App() {
             
             case "board":
 
-            if (modalInfo.workspaceId !== null) handleBoardAdded(data.data, modalInfo.workspaceId);
+            if (modalInfo[modalInfo.length - 1].workspaceId !== null) handleBoardAdded(data.data, modalInfo[modalInfo.length - 1].workspaceId);
             break;
 
             case "task":
-            if (modalInfo.boardId !== null) handleTaskAdded(data.data, modalInfo.boardId);
+            if (modalInfo[modalInfo.length - 1].boardId !== null) handleTaskAdded(data.data, modalInfo[modalInfo.length - 1].boardId);
             break;
         };
 
         handleModalClosed();
-        setModalInfo({workspaceId: null, boardId: null, type: null});
+    }
+
+    const handleNewModalOpened = (modal: ModalType, message?: string) => {
+        handleModalOpened(modal, undefined, message);
+    }
+
+    const handleUserConfirmation = (bIsAgree: boolean) => {
+        const lastModal = modalInfo[modalInfo.length - 1];
+
+        if (bIsAgree) {
+            if (lastModal.message?.includes("delete workspace")) {
+                if (lastModal.workspaceId !== null)
+                handleWorkspaceDeleted(lastModal.workspaceId)
+            }
+            if (lastModal.message?.includes("delete board")) {
+                if (lastModal.workspaceId !== null && lastModal.boardId !== null)
+                handleBoardDeleted(lastModal.workspaceId, lastModal.boardId);
+            }
+            if (lastModal.message?.includes("delete task")) {
+                if (lastModal.workspaceId !== null && lastModal.boardId !== null && lastModal.taskId !== null)
+                handleTaskDeleted(lastModal.workspaceId, lastModal.boardId, lastModal.taskId);
+            }
+            handleModalClosed(2);
+        }
+        else {
+            handleModalClosed();
+        }
+    }
+
+    const handleWorkspaceDeleted = (workspaceId: string) => {
+        updateTotalWorkspaces(oldWorkspacesList => {
+            const newWorkspacesList = oldWorkspacesList.filter(workspace =>
+            workspace.workspaceId !== workspaceId);
+            return newWorkspacesList;
+        })
+    }
+    const handleBoardDeleted = (workspaceId: string, boardId: string) => {
+        updateTotalWorkspaces(oldWorkspacesList =>
+            oldWorkspacesList.map(workspace =>
+                workspace.workspaceId === workspaceId
+                    ? {
+                        ...workspace,
+                        boards: workspace.boards.filter(
+                            board => board.taskBoardId !== boardId
+                        )
+                    }
+                : workspace
+            )
+        )
+    }
+    const handleTaskDeleted = (workspaceId: string, boardId: string, taskId: string) => {
+        updateTotalWorkspaces(oldWorkspacesList => 
+            oldWorkspacesList.map(workspace => 
+                workspace.workspaceId === workspaceId ? {
+                    ...workspace,
+                    boards: workspace.boards.map(board =>
+                        board.taskBoardId === boardId
+                        ? {
+                            ...board, 
+                            tasks: board.tasks.filter(
+                                task => task.taskId !== taskId
+                            )
+                        }
+                        : board
+                    )
+                }
+                : workspace
+            )
+        )
     }
 
     return (
@@ -157,11 +217,13 @@ function App() {
                 workspace={totalWorkspaces[activeWorkspace]}
                 onModalOpened={handleModalOpened}
             ></Workspace>
-            { modals.length > 0 &&
+            { modalInfo.length > 0 &&
             <ModalManager
-                activeModal={modals[modals.length - 1]}
+                activeModal={modalInfo[modalInfo.length - 1]}
                 onModalClosed={handleModalClosed}
                 onDataSaved={handleDataSaving}
+                onNewModalOpened={handleNewModalOpened}
+                onUserConfirmation={handleUserConfirmation}
             />
             }
         </>
