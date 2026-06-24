@@ -1,15 +1,24 @@
+import { ModalStoreSelectors } from "../../utilities/modals/ModalStoreSelectors";
+import { MODALS } from "../../utilities/modals/ModalTypes";
+
 import "../DefaultFormStyle.css"
 
-interface Props {
-    notificationMessage: string;
-    onModalClosed: () => void
-}
+function UserNotificationForm () {
+    const {lastModal, ModalClosed} = ModalStoreSelectors();
 
-function UserNotificationForm ({notificationMessage: onErrorMessage, onModalClosed}: Props) {
+    if (!lastModal)
+    return;
+    if (lastModal.type !== MODALS.USER_NOTIFICATION)
+    return;
+    if (!lastModal.message)
+    return;
+
+    const message: string = lastModal.message;
+
     return (
         <p className="modal-default">
-            <span className="white-background">{onErrorMessage}</span>
-            <button onClick={onModalClosed} className="save-button"><span className="white">Close</span></button>
+            <span className="white-background">{message}</span>
+            <button onClick={() => ModalClosed()} className="save-button"><span className="white">Close</span></button>
         </p>
     );
 }

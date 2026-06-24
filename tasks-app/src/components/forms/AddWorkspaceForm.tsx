@@ -1,36 +1,44 @@
-import type { WorkspaceType } from "../../types/DefaultType";
 import { generateId } from "../utilities/IdGenerator";
 import { useState } from "react";
 
+import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
+import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
+
+import { MODALS } from "../utilities/modals/ModalTypes";
+import { z } from "zod"
+
 import "./DefaultFormStyle.css"
 
-interface Props {
-    onWorkspaceAdded: (workspace: WorkspaceType) => void;
-    onModalClosed: () => void;
-    onUserNotification: (message: string) => void;
-    onUserConfirmation: (message: string) => void;
-}
-
-function AddWorkspaceForm({onWorkspaceAdded, onModalClosed, onUserNotification, onUserConfirmation}: Props) {
+function AddWorkspaceForm() {
     const [userWorkspaceName, updateUserWorkspaceName] = useState("");
     const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
     const [bWasSaved, updateWasSaved] = useState(false);
 
+    const {lastModal, ModalOpened, ModalClosed} = ModalStoreSelectors();
+    const {AddWorkspace} = WorkspaceStoreSelectors();
+
+    if (!lastModal)
+    return;
+    if (lastModal.type !== MODALS.CREATE_WORKSPACE)
+    return;
+
     const handleWorkspaceAdded = () => {
-        if (!/^[a-z]+$/.test(userWorkspaceName)) {
-            onUserNotification("Only lowercase letters are allowed");
+        const workspaceNameSchema = z.string().
+        regex(/^[a-z]+$/, "Only lowercase letters are allowed").
+        min(5, "Minimum length is 5 characters").
+        max(30, "Maximum length is 30 characters");
+
+        const result = workspaceNameSchema.safeParse(userWorkspaceName);
+
+        if (!result.success) {
+            ModalOpened({type: MODALS.USER_NOTIFICATION, message: result.error.issues[0].message});
             return;
         }
-        if (userWorkspaceName.length < 5) {
-            onUserNotification("Minimum length is 5 characters");
-            return;
-        }
-        if (userWorkspaceName.length > 30) {
-            onUserNotification("Maximum length is 30 characters");
-            return;
-        }
+
+
         
-        onWorkspaceAdded({workspaceId: generateId("Workspace"), name: userWorkspaceName, boards: []});
+        AddWorkspace({workspaceId: generateId("Workspace"), name: result.data, boards: []});
+        ModalClosed();
         updateWasSaved(true);
         updateUserWorkspaceName("");
     }
@@ -48,10 +56,10 @@ function AddWorkspaceForm({onWorkspaceAdded, onModalClosed, onUserNotification, 
 
     const handleModalClosed = () => {
         if (bWasSaved) {
-            onModalClosed()
+            ModalClosed();
         }
         else {
-            onUserConfirmation("Are you sure to quit without saving");
+            ModalOpened({type: MODALS.USER_CONFIRMATION, message: "Are you sure to quit without saving"});
         }
     }
 

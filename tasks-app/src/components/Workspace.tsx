@@ -1,5 +1,6 @@
 import type {WorkspaceType} from "../types/DefaultType"
-import type { ModalType } from "../types/DefaultType";
+import { ModalStoreSelectors } from "./utilities/modals/ModalStoreSelectors";
+import { MODALS, STATUSES } from "./utilities/modals/ModalTypes";
 
 import TaskBoard from "./TaskBoard";
 
@@ -8,28 +9,47 @@ import "./forms/DefaultFormStyle.css"
 
 interface Props {
     workspace: WorkspaceType;
-    onModalOpened: (modal: ModalType, workspaceId: string, message?: string, boardId?: string, taskId?: string) => void;
 }
 
-function Workspace({workspace, onModalOpened}: Props) {
+function Workspace({workspace}: Props) {
+    const {ModalOpened} = ModalStoreSelectors();
+
+    if (!workspace)
+    return;
+
     const {workspaceId, name, boards} = workspace;
 
     const handleOnAddBoardModalOpened = () => {
-        onModalOpened("createBoard", workspaceId);
+        ModalOpened({type: MODALS.CREATE_BOARD, workspaceId: workspaceId});
     }
 
     const handleOnAddTaskModalOpened = (boardId: string) => {
-        onModalOpened("createTask", workspaceId, boardId);
+        ModalOpened({type: MODALS.CREATE_TASK, workspaceId: workspaceId, boardId: boardId});
     }
 
     const handleDeletingWorkspace = () => {
-        onModalOpened("userConfirmation", workspaceId, "Are you sure you want to delete workspace? (this can't be undone)");
+        ModalOpened({type: MODALS.USER_CONFIRMATION, 
+            message: "Are you sure you want to delete workspace? (this can't be undone)", 
+            workspaceId: workspaceId, 
+            modalStatus: STATUSES.DELETE_WORKSPACE
+        });
     }
     const handleBoardDeleted = (boardId: string) => {
-        onModalOpened("userConfirmation", workspaceId, "Are you sure you want to delete board? (this can't be undone)", boardId);
+        ModalOpened({type: MODALS.USER_CONFIRMATION, 
+            message: "Are you sure you want to delete board? (this can't be undone)",
+            workspaceId: workspaceId,
+            boardId: boardId,
+            modalStatus: STATUSES.DELETE_BOARD
+        });
     }
     const handleTaskDeleted = (boardId: string, taskId: string) => {
-        onModalOpened("userConfirmation", workspaceId, "Are you sure you want to delete task? (this can't be undone)", boardId, taskId);
+        ModalOpened({type: MODALS.USER_CONFIRMATION,
+            message: "Are you sure you want to delete task? (this can't be undone)",
+            workspaceId: workspaceId,
+            boardId: boardId,
+            taskId: taskId,
+            modalStatus: STATUSES.DELETE_TASK
+        });
     }
 
     return (
@@ -43,8 +63,7 @@ function Workspace({workspace, onModalOpened}: Props) {
                         onTaskModalOpened={handleOnAddTaskModalOpened}
                         onBoardDeleted={handleBoardDeleted}
                         onTaskDeleted={handleTaskDeleted}
-                    >
-                    </TaskBoard>
+                    />
                 </li>)}
             </ul>
             <span>workspace id: {workspaceId}</span>

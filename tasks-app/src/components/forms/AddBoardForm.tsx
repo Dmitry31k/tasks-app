@@ -1,17 +1,19 @@
 import { useState } from "react";
-import type { BoardType } from "../../types/DefaultType";
 import { generateId } from "../utilities/IdGenerator";
+
+import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
+import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
+
+import { MODALS } from "../utilities/modals/ModalTypes";
 
 import "./DefaultFormStyle.css"
 
-interface Props {
-    onBoardAdded: (board: BoardType) => void;
-    onModalClosed: () => void;
-}
-
-function AddBoardForm({onBoardAdded, onModalClosed}: Props) {
+function AddBoardForm() {
     const [userBoardName, updateUserBoardName] = useState("");
     const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
+
+    const {lastModal, ModalClosed} = ModalStoreSelectors();
+    const {AddBoard} = WorkspaceStoreSelectors();
 
     const handleUpdatingUserBoardName = (input: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
         if (input.target.value !== "") {
@@ -24,11 +26,20 @@ function AddBoardForm({onBoardAdded, onModalClosed}: Props) {
         updateUserBoardName(input.target.value)
     }
 
-    const handleBoardAdding = () => {
-        onBoardAdded({taskBoardId: generateId("Board"), name: userBoardName, tasks: []});
+    if (!lastModal)
+    return;
+    if (lastModal.type !== MODALS.CREATE_BOARD)
+    return;
+    if (lastModal.workspaceId === undefined)
+    return;
 
+    const workspaceId: string = lastModal.workspaceId;
+
+    const handleBoardAdding = () => {
+        AddBoard({taskBoardId: generateId("Board"), name: userBoardName, tasks: []}, workspaceId);
         updateUserBoardName("");
         updateDisableSaveButton(true);
+        ModalClosed();
     }
 
     return (
@@ -43,7 +54,7 @@ function AddBoardForm({onBoardAdded, onModalClosed}: Props) {
                 disabled={bDisableSaveButton}
                 className="save-button"
             ><p className="white">Save board</p></button>
-            <button onClick={onModalClosed}
+            <button onClick={() => ModalClosed()}
                 className="save-button"
             ><p className="white">Close</p></button>
         </p>
