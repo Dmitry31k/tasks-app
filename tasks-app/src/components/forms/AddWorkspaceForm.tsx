@@ -1,4 +1,3 @@
-import { generateId } from "../utilities/IdGenerator";
 import { useState } from "react";
 
 import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
@@ -6,6 +5,7 @@ import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
 
 import { MODALS } from "../utilities/modals/ModalTypes";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
 import "./DefaultFormStyle.css";
 
@@ -38,7 +38,7 @@ function AddWorkspaceForm() {
     }
 
     AddWorkspace({
-      workspaceId: generateId("Workspace"),
+      workspaceId: uuidv4(),
       name: result.data,
       boards: [],
     });

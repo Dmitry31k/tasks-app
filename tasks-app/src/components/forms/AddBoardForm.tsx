@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { generateId } from "../utilities/IdGenerator";
 
 import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
 import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
 
 import { MODALS } from "../utilities/modals/ModalTypes";
+import { v4 as uuidv4 } from "uuid";
 
 import "./DefaultFormStyle.css";
 
@@ -35,7 +35,7 @@ function AddBoardForm() {
 
   const handleBoardAdding = () => {
     AddBoard(
-      { taskBoardId: generateId("Board"), name: userBoardName, tasks: [] },
+      { taskBoardId: uuidv4(), name: userBoardName, tasks: [] },
       workspaceId,
     );
     updateUserBoardName("");

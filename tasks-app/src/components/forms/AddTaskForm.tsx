@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { generateId } from "../utilities/IdGenerator";
 
 import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
 import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
 
 import { MODALS } from "../utilities/modals/ModalTypes";
+import { v4 as uuidv4 } from "uuid";
 
 import "./DefaultFormStyle.css";
 
@@ -22,7 +22,7 @@ function AddTaskForm() {
   const boardId: string = lastModal.boardId;
 
   const handleTaskAdded = () => {
-    AddTask({ taskId: generateId("Task"), title: userTask }, boardId);
+    AddTask({ taskId: uuidv4(), title: userTask }, boardId);
     updateUserTask("");
     updateDisableSaveButton(true);
     ModalClosed();
