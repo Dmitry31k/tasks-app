@@ -6,14 +6,22 @@ import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
 import { MODALS } from "../utilities/modals/ModalTypes";
 import { v4 as uuidv4 } from "uuid";
 
+import {
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  useForm,
+} from "react-hook-form";
+
+import type { formFields } from "./validation/DefaultZodValidation";
+import { formSchema } from "./validation/DefaultZodValidation";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import "./DefaultFormStyle.css";
 
 function AddTaskForm() {
-  const [userTask, updateUserTask] = useState("");
-  const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
-
-  const { lastModal, ModalClosed } = ModalStoreSelectors();
+  const { lastModal, ModalClosed, ModalOpened } = ModalStoreSelectors();
   const { AddTask } = WorkspaceStoreSelectors();
+  const [bWasSaved, updateWasSaved] = useState(false);
 
   if (!lastModal) return;
   if (lastModal.type !== MODALS.CREATE_TASK) return;
@@ -21,45 +29,38 @@ function AddTaskForm() {
 
   const boardId: string = lastModal.boardId;
 
-  const handleTaskAdded = () => {
-    AddTask({ taskId: uuidv4(), title: userTask }, boardId);
-    updateUserTask("");
-    updateDisableSaveButton(true);
+  const { register, handleSubmit } = useForm<formFields>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit: SubmitHandler<formFields> = (data) => {
+    AddTask({ taskId: uuidv4(), title: data.name }, boardId);
+    updateWasSaved(true);
     ModalClosed();
   };
 
-  const handleUpdatingUserTaskInput = (
-    input: React.ChangeEvent<HTMLInputElement, HTMLInputElement>,
-  ) => {
-    if (input.target.value !== "") {
-      updateDisableSaveButton(false);
-    } else {
-      updateDisableSaveButton(true);
-    }
-
-    updateUserTask(input.target.value);
+  const onError: SubmitErrorHandler<formFields> = (errors) => {
+    ModalOpened({
+      type: MODALS.USER_NOTIFICATION,
+      message: errors.name?.message ?? "incorrect name",
+    });
   };
 
   return (
-    <p className="modal-default">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="modal-default">
       <input
         type="text"
         placeholder="New task (can't be empty)"
-        onChange={handleUpdatingUserTaskInput}
-        value={userTask}
         className="default-input"
+        {...register("name")}
       />
-      <button
-        onClick={handleTaskAdded}
-        disabled={bDisableSaveButton}
-        className="save-button"
-      >
+      <button type="submit" className="save-button">
         <p className="white">Save task</p>
       </button>
       <button onClick={() => ModalClosed()} className="save-button">
         <p className="white">Close</p>
       </button>
-    </p>
+    </form>
   );
 }
 

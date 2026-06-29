@@ -6,26 +6,22 @@ import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
 import { MODALS } from "../utilities/modals/ModalTypes";
 import { v4 as uuidv4 } from "uuid";
 
+import {
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  useForm,
+} from "react-hook-form";
+
+import type { formFields } from "./validation/DefaultZodValidation";
+import { formSchema } from "./validation/DefaultZodValidation";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import "./DefaultFormStyle.css";
 
 function AddBoardForm() {
-  const [userBoardName, updateUserBoardName] = useState("");
-  const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
-
-  const { lastModal, ModalClosed } = ModalStoreSelectors();
+  const { lastModal, ModalClosed, ModalOpened } = ModalStoreSelectors();
   const { AddBoard } = WorkspaceStoreSelectors();
-
-  const handleUpdatingUserBoardName = (
-    input: React.ChangeEvent<HTMLInputElement, HTMLInputElement>,
-  ) => {
-    if (input.target.value !== "") {
-      updateDisableSaveButton(false);
-    } else {
-      updateDisableSaveButton(true);
-    }
-
-    updateUserBoardName(input.target.value);
-  };
+  const [bWasSaved, updateWasSaved] = useState(false);
 
   if (!lastModal) return;
   if (lastModal.type !== MODALS.CREATE_BOARD) return;
@@ -33,36 +29,52 @@ function AddBoardForm() {
 
   const workspaceId: string = lastModal.workspaceId;
 
-  const handleBoardAdding = () => {
+  const { register, handleSubmit } = useForm<formFields>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit: SubmitHandler<formFields> = (data) => {
     AddBoard(
-      { taskBoardId: uuidv4(), name: userBoardName, tasks: [] },
+      { taskBoardId: uuidv4(), name: data.name, tasks: [] },
       workspaceId,
     );
-    updateUserBoardName("");
-    updateDisableSaveButton(true);
+    updateWasSaved(true);
     ModalClosed();
   };
 
+  const onError: SubmitErrorHandler<formFields> = (errors) => {
+    ModalOpened({
+      type: MODALS.USER_NOTIFICATION,
+      message: errors.name?.message ?? "incorrect name",
+    });
+  };
+
+  const handleModalClosed = () => {
+    if (bWasSaved) {
+      ModalClosed();
+    } else {
+      ModalOpened({
+        type: MODALS.USER_CONFIRMATION,
+        message: "Are you sure to quit without saving",
+      });
+    }
+  };
+
   return (
-    <p className="modal-default">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="modal-default">
       <input
         type="text"
         placeholder="Board name (can't be empty)"
-        onChange={handleUpdatingUserBoardName}
-        value={userBoardName}
         className="default-input"
+        {...register("name")}
       />
-      <button
-        onClick={handleBoardAdding}
-        disabled={bDisableSaveButton}
-        className="save-button"
-      >
+      <button type="submit" className="save-button">
         <p className="white">Save board</p>
       </button>
-      <button onClick={() => ModalClosed()} className="save-button">
+      <button onClick={handleModalClosed} className="save-button">
         <p className="white">Close</p>
       </button>
-    </p>
+    </form>
   );
 }
 

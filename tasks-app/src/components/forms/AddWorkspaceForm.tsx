@@ -4,59 +4,40 @@ import { ModalStoreSelectors } from "../utilities/modals/ModalStoreSelectors";
 import { WorkspaceStoreSelectors } from "../WorkspaceStoreSelectors";
 
 import { MODALS } from "../utilities/modals/ModalTypes";
-import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
+
+import {
+  type SubmitErrorHandler,
+  type SubmitHandler,
+  useForm,
+} from "react-hook-form";
+
+import type { formFields } from "./validation/DefaultZodValidation";
+import { formSchema } from "./validation/DefaultZodValidation";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import "./DefaultFormStyle.css";
 
 function AddWorkspaceForm() {
-  const [userWorkspaceName, updateUserWorkspaceName] = useState("");
-  const [bDisableSaveButton, updateDisableSaveButton] = useState(true);
   const [bWasSaved, updateWasSaved] = useState(false);
-
   const { lastModal, ModalOpened, ModalClosed } = ModalStoreSelectors();
   const { AddWorkspace } = WorkspaceStoreSelectors();
 
-  if (!lastModal) return;
-  if (lastModal.type !== MODALS.CREATE_WORKSPACE) return;
+  if (!lastModal) return null;
+  if (lastModal.type !== MODALS.CREATE_WORKSPACE) return null;
 
-  const handleWorkspaceAdded = () => {
-    const workspaceNameSchema = z
-      .string()
-      .regex(/^[a-z]+$/, "Only lowercase letters are allowed")
-      .min(5, "Minimum length is 5 characters")
-      .max(30, "Maximum length is 30 characters");
+  const { register, handleSubmit } = useForm<formFields>({
+    resolver: zodResolver(formSchema),
+  });
 
-    const result = workspaceNameSchema.safeParse(userWorkspaceName);
-
-    if (!result.success) {
-      ModalOpened({
-        type: MODALS.USER_NOTIFICATION,
-        message: result.error.issues[0].message,
-      });
-      return;
-    }
-
+  const onSubmit: SubmitHandler<formFields> = (data) => {
     AddWorkspace({
       workspaceId: uuidv4(),
-      name: result.data,
+      name: data.name,
       boards: [],
     });
-    ModalClosed();
     updateWasSaved(true);
-    updateUserWorkspaceName("");
-  };
-
-  const handleUpdatingUserWorkspaceName = (
-    input: React.ChangeEvent<HTMLInputElement, HTMLInputElement>,
-  ) => {
-    if (input.target.value === "") {
-      updateDisableSaveButton(true);
-    } else {
-      updateDisableSaveButton(false);
-    }
-
-    updateUserWorkspaceName(input.target.value);
+    ModalClosed();
   };
 
   const handleModalClosed = () => {
@@ -70,26 +51,28 @@ function AddWorkspaceForm() {
     }
   };
 
+  const onError: SubmitErrorHandler<formFields> = (errors) => {
+    ModalOpened({
+      type: MODALS.USER_NOTIFICATION,
+      message: errors.name?.message ?? "incorrect name",
+    });
+  };
+
   return (
-    <p className="modal-default">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="modal-default">
       <input
         type="text"
         placeholder="New workspace name (can't be empty)"
-        onChange={handleUpdatingUserWorkspaceName}
-        value={userWorkspaceName}
         className="default-input"
+        {...register("name")}
       />
-      <button
-        onClick={handleWorkspaceAdded}
-        disabled={bDisableSaveButton}
-        className="save-button"
-      >
+      <button className="save-button" type="submit">
         <p className="white">Save workspace</p>
       </button>
-      <button onClick={handleModalClosed} className="save-button">
+      <button className="save-button" type="button" onClick={handleModalClosed}>
         <p className="white">Close</p>
       </button>
-    </p>
+    </form>
   );
 }
 

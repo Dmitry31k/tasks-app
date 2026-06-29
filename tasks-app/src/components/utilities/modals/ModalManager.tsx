@@ -3,14 +3,7 @@ import { ModalsMap } from "./ModalTypes";
 
 function ModalManager() {
   const { lastModal } = ModalStoreSelectors();
-
-  const Comp = lastModal ? ModalsMap[lastModal.type!] : null;
-
-  if (Comp) {
-    return <Comp />;
-  } else {
-    return;
-  }
+  return lastModal ? ModalsMap[lastModal.type!] : null;
 }
 
 export default ModalManager;
