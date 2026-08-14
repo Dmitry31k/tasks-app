@@ -4,10 +4,61 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id String @id @default(uuid())
+
+  username     String
+  passwordHash String @map("password_hash")
+
+  ownedWorkspaces Workspace[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Workspace {
+  id String @id @default(uuid())
+
+  workspaceName String  @map("workspace_name")
+  boards        Board[]
+
+  ownerUser User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String @map("user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Board {
+  id String @id @default(uuid())
+
+  boardName String @map("board_name")
+  tasks     Task[]
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String    @map("workspace_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Task {
+  id String @id @default(uuid())
+
+  taskTitle String @map("task_title")
+
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId String @map("board_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
