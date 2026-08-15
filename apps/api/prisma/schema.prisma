@@ -19,7 +19,7 @@ model User {
   username     String
   passwordHash String @map("password_hash")
 
-  ownedWorkspaces Workspace[]
+  userAccesses UserAccess[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -31,8 +31,7 @@ model Workspace {
   workspaceName String  @map("workspace_name")
   boards        Board[]
 
-  ownerUser User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String @map("user_id")
+  userAccesses UserAccess[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -61,4 +60,25 @@ model Task {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model UserAccess {
+  workspaceId String
+  userId      String
+
+  userRole Role
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, workspaceId])
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  MEMBER
 }

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { WorkspaceService } from './workspace.service';
 import { BaseCreateTaskManagerDto } from './dto/base-task-manager.dto';
 import { PassportJwtGuard } from 'src/auth/guards/passport-jwt.guard';
+import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
 
 @Controller('workspace')
 export class WorkspaceController {
@@ -23,5 +24,17 @@ export class WorkspaceController {
   @Get("by-id/:id")
   getWorkspaceById(@Param("id") id: string, @Request() request) {
     return this.workspaceService.getWorkspaceById(request.user.userId, id);
+  }
+
+  @UseGuards(PassportJwtGuard)
+  @Delete("by-id/:id")
+  deleteWorkspace(@Param("id") id: string, @Request() request) {
+    return this.workspaceService.deleteWorkspace(request.user.userId, id);
+  }
+
+  @UseGuards(PassportJwtGuard)
+  @Post("member")
+  addWorkspaceMember(@Request() request, @Body() dto: AddWorkspaceMemberDto) {
+    return this.workspaceService.addWorkspaceMember(request.user.userId, dto);
   }
 }
