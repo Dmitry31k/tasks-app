@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '
 import { WorkspaceService } from './workspace.service';
 import { BaseCreateTaskManagerDto } from './dto/base-task-manager.dto';
 import { PassportJwtGuard } from 'src/auth/guards/passport-jwt.guard';
-import { AddWorkspaceMemberDto } from './dto/workspace-member.dto';
+import { AddWorkspaceMemberDto, RemoveWorkspaceMemberDto } from './dto/workspace-member.dto';
 
 @Controller('workspace')
 export class WorkspaceController {
@@ -36,5 +36,11 @@ export class WorkspaceController {
   @Post("member")
   addWorkspaceMember(@Request() request, @Body() dto: AddWorkspaceMemberDto) {
     return this.workspaceService.addWorkspaceMember(request.user.userId, dto);
+  }
+
+  @UseGuards(PassportJwtGuard)
+  @Delete("member")
+  deleteWorkspaceMember(@Request() request, @Body() dto: RemoveWorkspaceMemberDto) {
+    return this.workspaceService.removeWorkspaceMember(request.user.userId, dto);
   }
 }
