@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BaseCreateTaskManagerDto } from './dto/base-task-manager.dto';
-import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
+import { AddWorkspaceMemberDto, RemoveWorkspaceMemberDto } from './dto/workspace-member.dto';
 import { UsersService } from 'src/users/users.service';
+import { Role } from 'generated/prisma/enums';
+import { UserAccess } from 'generated/prisma/browser';
 
 @Injectable()
 export class WorkspaceService {
@@ -72,13 +74,7 @@ export class WorkspaceService {
     }
 
     async deleteWorkspace(userId: string, workspaceId: string) {
-        await this.prismaService.userAccess.findFirstOrThrow({
-            where: {
-                userRole: "OWNER",
-                userId: userId,
-                workspaceId: workspaceId
-            }
-        });
+        await this.assertWorkspaceRole(workspaceId, userId, [Role.OWNER]);
 
         return await this.prismaService.workspace.delete({
             where: {
@@ -88,21 +84,44 @@ export class WorkspaceService {
     }
 
     async addWorkspaceMember(userId: string, dto: AddWorkspaceMemberDto) {
-        await this.prismaService.userAccess.findFirstOrThrow({
-            where: {
-                workspaceId: dto.workspaceId,
-                userId: userId,
-                userRole: "OWNER"
-            }
-        });
-
-        const user = this.usersService.findUserByName(dto.username);
+        await this.assertWorkspaceRole(dto.workspaceId, userId, [Role.OWNER]);
+        const user = await this.usersService.findUserByName(dto.username);
 
         return await this.prismaService.userAccess.create({
             data: {
                 userRole: dto.userRole,
-                userId: (await user).id,
+                userId: user.id,
                 workspaceId: dto.workspaceId
+            }
+        });
+    }
+
+    async removeWorkspaceMember(userId: string, dto: RemoveWorkspaceMemberDto) {
+        await this.assertWorkspaceRole(dto.workspaceId, userId, [Role.OWNER]);
+        const user = await this.usersService.findUserByName(dto.username);
+
+        if (user.id === userId) {
+            throw new BadRequestException("Owner can't remove himself from workspace");
+        }
+
+        return await this.prismaService.userAccess.delete({
+            where: {
+                userId_workspaceId: {
+                    userId: user.id,
+                    workspaceId: dto.workspaceId
+                }
+            }
+        })
+    }
+
+    private async assertWorkspaceRole(workspaceId: string, userId: string, userRoles: Role[]): Promise<UserAccess> {
+        return await this.prismaService.userAccess.findFirstOrThrow({
+            where: {
+                workspaceId: workspaceId,
+                userId: userId,
+                userRole: {
+                    in: userRoles
+                }
             }
         });
     }

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '
 import { WorkspaceService } from './workspace.service';
 import { BaseCreateTaskManagerDto } from './dto/base-task-manager.dto';
 import { PassportJwtGuard } from 'src/auth/guards/passport-jwt.guard';
-import { AddWorkspaceMemberDto } from './dto/add-workspace-member.dto';
+import { AddWorkspaceMemberDto } from './dto/workspace-member.dto';
 
 @Controller('workspace')
 export class WorkspaceController {

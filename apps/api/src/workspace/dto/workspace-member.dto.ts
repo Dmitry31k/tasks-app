@@ -5,3 +5,8 @@ export class AddWorkspaceMemberDto {
     userRole!: Role;
     workspaceId!: string;
 }
+
+export class RemoveWorkspaceMemberDto {
+    workspaceId!: string;
+    username!: string;
+}
