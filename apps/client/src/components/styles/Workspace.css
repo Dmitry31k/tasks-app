@@ -1,0 +1,24 @@
+.default-workspace {
+    background-color: rgb(245, 247, 250);
+
+    padding: 20px;
+
+    border-radius: 50px;
+}
+
+.boards-list {
+    background-color: rgb(214, 210, 201);
+
+    border-radius: 10px;
+    margin: 15px;
+    padding: 5px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+}
+
+.white {
+    color: whitesmoke;
+}

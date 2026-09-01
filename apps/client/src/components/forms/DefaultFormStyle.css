@@ -1,0 +1,55 @@
+.modal-default {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    pointer-events: auto;
+    overflow: hidden;
+    
+    z-index: 1000;
+}
+
+.white-background {
+    margin: 10px;
+    border-radius: 5px;
+    padding: 30px;
+    background-color: aliceblue;
+}
+
+.default-input {
+    margin: 10px;
+    border-radius: 5px;
+
+    width: 100%;
+    max-width: 400px;
+
+    padding: 5px;
+}
+
+.save-button {
+    background-color: rgb(98, 132, 149);
+    
+    margin: 10px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.add-button {
+    background-color: rgb(201, 177, 210);
+
+    margin: 10px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.save-button:disabled {
+    background-color: rgb(169, 196, 209);
+}
